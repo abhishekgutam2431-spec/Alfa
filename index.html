@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CreatorAI Pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root{
+      --cream:#f3f1ec;
+      --white:#ffffff;
+      --ink:#15142a;
+      --ink3:#9898b0;
+      --gold: #f5c451;
+      --gold-glow: rgba(245, 196, 81, 0.6);
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:'Outfit',sans-serif;
+      background:var(--cream);
+      color:var(--ink);
+      min-height:100vh;
+      overflow-x:hidden;
+    }
+
+    .bg{
+      position:fixed;inset:0;pointer-events:none;z-index:0;
+      background: radial-gradient(ellipse 700px 500px at -5% -10%, rgba(94,43,255,0.1) 0%, transparent 65%),
+                  radial-gradient(ellipse 600px 500px at 108% 108%, rgba(192,38,211,0.08) 0%, transparent 65%);
+    }
+
+    .wrap{
+      position:relative;z-index:1;
+      max-width:1100px;margin:0 auto;
+      padding:36px 24px 60px;
+    }
+
+    .logo{
+      font-family:'Cormorant Garamond',serif;
+      font-size:2.8rem;font-weight:700;letter-spacing:-1.5px;
+    }
+    .logo em{
+      background:linear-gradient(130deg,#5e2bff,#f5c451);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    }
+
+    /* ==================== CARDS ==================== */
+    .cards{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+      gap:24px;
+    }
+
+    .card{
+      background:var(--white);
+      border:1px solid var(--border);
+      border-radius:26px;
+      padding:32px 26px;
+      cursor:pointer;
+      transition:all 0.4s cubic-bezier(0.4,0,0.2,1);
+      box-shadow:0 8px 25px rgba(0,0,0,0.08);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .card::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      border:2px solid transparent;
+      border-radius:26px;
+      background:linear-gradient(45deg, transparent, var(--gold-glow), transparent) border-box;
+      -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity:0;
+      transition:all 0.4s;
+    }
+
+    .card:hover{
+      transform:translateY(-12px) scale(1.04);
+      box-shadow:0 25px 50px -10px rgba(0,0,0,0.18);
+    }
+
+    .card.active{
+      border-color:var(--gold);
+      box-shadow:0 0 35px var(--gold-glow);
+      transform:scale(1.02);
+    }
+
+    .card-top{
+      width:60px;height:60px;border-radius:18px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:1.5rem;
+      margin-bottom:22px;
+      transition:all 0.4s;
+      box-shadow:0 6px 20px rgba(0,0,0,0.15);
+    }
+
+    .card[data-k="assistant"] .card-top{ background:linear-gradient(135deg,#5e2bff,#7c3aed); color:white; }
+    .card[data-k="caption"]   .card-top{ background:linear-gradient(135deg,#c026d3,#db2777); color:white; }
+    .card[data-k="reel"]      .card-top{ background:linear-gradient(135deg,#e85d04,#f59e0b); color:white; }
+    .card[data-k="hashtag"]   .card-top{ background:linear-gradient(135deg,#00b894,#10e0b0); color:white; }
+    .card[data-k="ideas"]     .card-top{ background:linear-gradient(135deg,#d4a017,#f5c451); color:#1a1200; }
+
+    .card:hover .card-top{transform:scale(1.15) rotate(-8deg);}
+
+    /* ==================== TOOL SCREEN ==================== */
+    #screen-select, #screen-tool{
+      transition:all 0.5s ease;
+    }
+
+    #screen-tool{
+      opacity:0;
+      transform:translateY(40px);
+      pointer-events:none;
+      display:none;
+    }
+
+    #screen-tool.active{
+      opacity:1;
+      transform:translateY(0);
+      pointer-events:all;
+      display:block;
+    }
+
+    .tool-wrap{
+      background:var(--white);
+      border-radius:28px;
+      box-shadow:0 20px 70px rgba(21,20,42,0.15);
+      overflow:hidden;
+      animation:toolOpen 0.6s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    @keyframes toolOpen{
+      from{opacity:0; transform:scale(0.85) translateY(60px);}
+      to{opacity:1; transform:scale(1) translateY(0);}
+    }
+
+    .back-btn{
+      padding:10px 16px;
+      border-radius:12px;
+      background:transparent;
+      border:none;
+      color:var(--ink3);
+      font-weight:500;
+      cursor:pointer;
+      transition:0.3s;
+    }
+    .back-btn:hover{
+      background:rgba(0,0,0,0.05);
+      color:var(--ink);
+      transform:translateX(-4px);
+    }
+
+    .tool-body{
+      padding:40px;
+    }
+
+    .ttl{
+      font-family:'Cormorant Garamond',serif;
+      font-size:2.2rem;
+      font-weight:700;
+      letter-spacing:-0.6px;
+    }
+
+    textarea, input[type="text"]{
+      width:100%;
+      padding:18px 22px;
+      border:1.5px solid #e5e3dc;
+      border-radius:16px;
+      font-size:0.95rem;
+      background:#f8f7f4;
+      margin-bottom:16px;
+    }
+
+    textarea:focus, input:focus{
+      outline:none;
+      border-color:var(--gold);
+      box-shadow:0 0 0 4px rgba(245,196,81,0.2);
+    }
+
+    .btn{
+      width:100%;
+      padding:16px;
+      border:none;
+      border-radius:16px;
+      font-weight:600;
+      font-size:1rem;
+      color:white;
+      cursor:pointer;
+      transition:all 0.3s;
+    }
+    .btn:hover{
+      transform:translateY(-3px);
+      box-shadow:0 12px 30px rgba(0,0,0,0.2);
+    }
+
+    .out{
+      margin-top:20px;
+      padding:24px;
+      border-radius:16px;
+      background:#f8f7f4;
+      min-height:140px;
+      white-space:pre-wrap;
+      line-height:1.7;
+    }
+    .out.lit{
+      background:white;
+      border:1px solid var(--gold);
+      box-shadow:0 0 25px rgba(245,196,81,0.25);
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg"></div>
+
+<div class="wrap">
+  <div class="hdr" style="margin-bottom:50px">
+    <div class="logo">CreatorAI <em>Pro</em></div>
+  </div>
+
+  <!-- Screen 1 -->
+  <div id="screen-select">
+    <div style="text-align:center;margin-bottom:50px">
+      <h2 style="font-size:2rem;font-family:'Cormorant Garamond',serif;">Choose your Tool</h2>
+    </div>
+    <div class="cards">
+
+      <div class="card" data-k="assistant" onclick="openTool('assistant')">
+        <div class="card-top"><i class="fa-solid fa-robot"></i></div>
+        <h3>AI Assistant</h3>
+        <p>Kuch bhi poochho, AI turant help karega</p>
+      </div>
+
+      <div class="card" data-k="caption" onclick="openTool('caption')">
+        <div class="card-top"><i class="fa-solid fa-pen-nib"></i></div>
+        <h3>Caption Generator</h3>
+        <p>Viral captions ready in seconds</p>
+      </div>
+
+      <div class="card" data-k="reel" onclick="openTool('reel')">
+        <div class="card-top"><i class="fa-solid fa-video"></i></div>
+        <h3>Reel Ideas + Hooks</h3>
+        <p>Scroll-stopping hooks for your reels</p>
+      </div>
+
+      <div class="card" data-k="hashtag" onclick="openTool('hashtag')">
+        <div class="card-top"><i class="fa-solid fa-hashtag"></i></div>
+        <h3>Hashtag Generator</h3>
+        <p>30 power hashtags — high to niche</p>
+      </div>
+
+      <div class="card" data-k="ideas" onclick="openTool('ideas')">
+        <div class="card-top"><i class="fa-solid fa-lightbulb"></i></div>
+        <h3>Viral Ideas</h3>
+        <p>7 ideas guaranteed to blow up</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Screen 2 -->
+  <div id="screen-tool">
+    <div class="tool-wrap">
+      <div style="padding:16px 24px 0; border-bottom:1px solid #e5e3dc; display:flex; align-items:center; gap:12px;">
+        <button class="back-btn" onclick="goBack()">
+          ← All Tools
+        </button>
+        <div id="active-tab" style="font-weight:600; padding:10px 20px; border-radius:12px 12px 0 0; background:var(--cream);"></div>
+      </div>
+      <div class="tool-body" id="tool-body"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_KEY = "AIzaSyAYZchQkd8HMi_M1cg_9gjX7wbjeGqAeUo";
+
+async function callGemini(prompt) {
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({contents: [{parts: [{text: prompt}]}]})
+    });
+    const data = await res.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || "Kuch nahi mila";
+  } catch(e) {
+    return "Error: Internet check karo";
+  }
+}
+
+function load(msg) {
+  const out = document.getElementById('out');
+  out.classList.remove('lit');
+  out.innerHTML = `<div style="display:flex;align-items:center;gap:12px;color:#888;">${msg} <span style="display:inline-flex;gap:4px"><span style="animation:dot 1.2s infinite">●</span><span style="animation:dot 1.2s infinite .2s">●</span><span style="animation:dot 1.2s infinite .4s">●</span></span></div>`;
+}
+
+function done(text) {
+  const out = document.getElementById('out');
+  out.innerHTML = text;
+  out.classList.add('lit');
+}
+
+// Tool Config
+const TOOLS = {
+  assistant: {title: "AI Assistant", icon: "fa-robot"},
+  caption: {title: "Caption Generator", icon: "fa-pen-nib"},
+  reel: {title: "Reel Ideas + Hooks", icon: "fa-video"},
+  hashtag: {title: "Hashtag Generator", icon: "fa-hashtag"},
+  ideas: {title: "Viral Ideas", icon: "fa-lightbulb"}
+};
+
+function openTool(key) {
+  // Remove active from all cards
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+  // Add active to clicked card
+  event.currentTarget.classList.add('active');
+
+  document.getElementById('screen-select').style.opacity = '0';
+
+  setTimeout(() => {
+    document.getElementById('screen-select').style.display = 'none';
+
+    const toolScreen = document.getElementById('screen-tool');
+    toolScreen.classList.add('active');
+    toolScreen.style.display = 'block';
+
+    const tool = TOOLS[key];
+
+    document.getElementById('active-tab').innerHTML = `
+      <i class="fa-solid ${tool.icon}" style="margin-right:10px"></i> ${tool.title}
+    `;
+
+    let html = '';
+
+    if(key === 'assistant'){
+      html = `
+        <h2 class="ttl">AI Assistant</h2>
+        <p style="color:#666;margin-bottom:20px">Kuch bhi poochho...</p>
+        <textarea id="inp" rows="4" placeholder="Kya help chahiye bhai..."></textarea>
+        <button class="btn" style="background:linear-gradient(135deg,#5e2bff,#7c3aed)" onclick="sendMsg()">Send to AI</button>
+        <div class="out" id="out">Jawab yahan aayega...</div>
+      `;
+    } else if(key === 'caption'){
+      html = `
+        <h2 class="ttl">Caption Generator</h2>
+        <input type="text" id="inp" placeholder="Topic daalo (Gym, Travel, Food...)">
+        <button class="btn" style="background:linear-gradient(135deg,#c026d3,#db2777)" onclick="genCaption()">Generate Caption</button>
+        <div class="out" id="out"></div>
+      `;
+    } else if(key === 'reel'){
+      html = `
+        <h2 class="ttl">Reel Ideas + Hooks</h2>
+        <input type="text" id="inp" placeholder="Niche daalo (Fitness, Motivation...)">
+        <button class="btn" style="background:linear-gradient(135deg,#e85d04,#f59e0b)" onclick="genReel()">Generate Reel Ideas</button>
+        <div class="out" id="out"></div>
+      `;
+    } else if(key === 'hashtag'){
+      html = `
+        <h2 class="ttl">Hashtag Generator</h2>
+        <input type="text" id="inp" placeholder="Topic daalo">
+        <button class="btn" style="background:linear-gradient(135deg,#00b894,#10e0b0)" onclick="genHashtag()">Generate Hashtags</button>
+        <div class="out" id="out"></div>
+      `;
+    } else if(key === 'ideas'){
+      html = `
+        <h2 class="ttl">Viral Ideas</h2>
+        <input type="text" id="inp" placeholder="Apna niche batao">
+        <button class="btn" style="background:linear-gradient(135deg,#d4a017,#f5c451);color:#1a1200" onclick="genIdeas()">Generate Viral Ideas</button>
+        <div class="out" id="out"></div>
+      `;
+    }
+
+    document.getElementById('tool-body').innerHTML = html;
+  }, 350);
+}
+
+function goBack() {
+  document.getElementById('screen-tool').classList.remove('active');
+  setTimeout(() => {
+    document.getElementById('screen-tool').style.display = 'none';
+    const select = document.getElementById('screen-select');
+    select.style.display = 'block';
+    select.style.opacity = '1';
+    document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+  }, 400);
+}
+
+// Tool Functions
+async function sendMsg(){ 
+  const val = document.getElementById('inp').value.trim();
+  if(!val) return;
+  load("Soch raha hoon...");
+  const res = await callGemini(val);
+  done(res);
+}
+async function genCaption(){ 
+  const val = document.getElementById('inp').value.trim() || "general";
+  load("Viral caption bana raha hoon...");
+  const res = await callGemini(`Ekdam viral Instagram caption banao topic par: ${val}. Emoji aur call to action ke saath.`);
+  done(res);
+}
+async function genReel(){ 
+  const val = document.getElementById('inp').value.trim() || "motivation";
+  load("Reel ideas soch raha hoon...");
+  const res = await callGemini(`Is niche ke liye 5 best reel ideas aur powerful hooks: ${val}`);
+  done(res);
+}
+async function genHashtag(){ 
+  const val = document.getElementById('inp').value.trim() || "content";
+  load("Hashtags nikaal raha hoon...");
+  const res = await callGemini(`Is topic ke liye 25 best hashtags: ${val}`);
+  done(res);
+}
+async function genIdeas(){ 
+  const val = document.getElementById('inp').value.trim() || "tech";
+  load("Viral ideas generate kar raha hoon...");
+  const res = await callGemini(`Is niche ke liye 7 zabardast viral content ideas: ${val}`);
+  done(res);
+}
+</script>
+</body>
+  </html>
